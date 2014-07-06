@@ -92,7 +92,7 @@ class Server:
         )        
 
 
-    def getServerPIDs(self):
+    def getPIDs(self):
         """
         Returns a list of integers containing the PIDs of each Java Runtime Environment currently
         executing the server jar-file
@@ -122,7 +122,7 @@ class Server:
         Returns True if any server processes are currently running.
         """
 
-        return len(self.getServerPIDs()) > 0
+        return len(self.getPIDs()) > 0
 
 
     def getUptime(self):
@@ -130,7 +130,7 @@ class Server:
         Returns the number of seconds for which this server has been running
         """
 
-        serverPIDs = self.getServerPIDs()
+        serverPIDs = self.getPIDs()
 
         if not self.online or not self.isOnline():
             return None
@@ -521,7 +521,7 @@ class Server:
         # List of process IDs of Java Runtime Environment processes currently
         # executing the Minecraft server.
         # len(serverPIDs) gives the number of processes currently running.
-        serverPIDs = self.getServerPIDs()    
+        serverPIDs = self.getPIDs()
 
         while len(serverPIDs) > 1:
             # Multiple instances of this server are running simultaneously. Kill the ones
@@ -569,7 +569,7 @@ class Server:
                 newestProcess.kill()
 
             time.sleep(5)
-            serverPIDs = self.getServerPIDs()
+            serverPIDs = self.getPIDs()
 
 
         if self.online:
