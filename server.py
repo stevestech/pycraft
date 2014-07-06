@@ -85,9 +85,9 @@ class Server:
         subprocess.call(
             'screen -p 0 -S '
             + self.config['SERVER_NICK']
-            + ' -X stuff \r'
+            + ' -X stuff "\r'
             + command
-            + '\r',
+            + '\r"',
             shell=True
         )        
 
