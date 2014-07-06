@@ -51,7 +51,7 @@ class Server:
         self.restartEvents = []
 
         # Schedule initial restart and server check events.
-        self.scheduleCheck()
+        self.scheduleCheck(immediate=True)
         self.scheduleRestarts()
 
 
@@ -124,18 +124,29 @@ class Server:
             return time.time() - process.create_time
 
 
-    def scheduleCheck(self):
+    def scheduleCheck(self, immediate=False):
         """
         Enter an event in the server scheduler that will call this server's
-        self.check() method in 60 seconds.
+        self.check() method.
         """
 
-        Server.serverScheduler.enter(
-            60,
-            1,
-            self.check,
-            ()
-        )
+        if immediate:
+            # Schedule an immediate server check
+            Server.serverScheduler.enter(
+                0,
+                1,
+                self.check,
+                ()
+            )
+
+        else:
+            # Schedule a server check in 60 seconds
+            Server.serverScheduler.enter(
+                60,
+                1,
+                self.check,
+                ()
+            )
 
 
     def scheduleRestarts(self):
