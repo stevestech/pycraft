@@ -15,7 +15,7 @@ import psutil
 class Server:
     # Unbound variable containing an instance of the sched.scheduler
     # class, used to schedule restart and server check events across all servers.
-    serverScheduler = sched.scheduler(
+    scheduler = sched.scheduler(
         time.time,
         time.sleep
     )
@@ -24,14 +24,14 @@ class Server:
     @staticmethod
     def run():
         """
-        Static method which hands execution over to the serverScheduler.
-        serverScheduler will run server restart and server check events as scheduled, and will
+        Static method which hands execution over to the scheduler.
+        scheduler will run server restart and server check events as scheduled, and will
         run time.sleep in between events.
         """
 
-        logging.info('Running serverScheduler.')
+        logging.info('Running scheduler.')
 
-        Server.serverScheduler.run()
+        Server.scheduler.run()
 
 
     def __init__(self, config):
@@ -155,7 +155,7 @@ class Server:
 
         if immediate:
             # Schedule an immediate server check
-            Server.serverScheduler.enter(
+            Server.scheduler.enter(
                 0,
                 1,
                 self.check,
@@ -164,7 +164,7 @@ class Server:
 
         else:
             # Schedule a server check in 60 seconds
-            Server.serverScheduler.enter(
+            Server.scheduler.enter(
                 60,
                 1,
                 self.check,
@@ -205,7 +205,7 @@ class Server:
                 # restart after 10 minutes.
                 if upTime >= self.config['RESTART_TIME'] - 10*60:
                     self.restartEvents.append(
-                        Server.serverScheduler.enter(
+                        Server.scheduler.enter(
                             0*60,                     # Execute task in 0 seconds
                             1,                        # Task has priority of 1
                             self.restartWarning,      # Call self.restartWarning(10)
@@ -214,7 +214,7 @@ class Server:
                     )
                     
                     self.restartEvents.append(
-                        Server.serverScheduler.enter(
+                        Server.scheduler.enter(
                             5*60,
                             1,
                             self.restartWarning,
@@ -223,7 +223,7 @@ class Server:
                     )
                     
                     self.restartEvents.append(
-                        Server.serverScheduler.enter(
+                        Server.scheduler.enter(
                             9*60,
                             1,
                             self.restartWarning,
@@ -232,7 +232,7 @@ class Server:
                     )
 
                     self.restartEvents.append(
-                        Server.serverScheduler.enter(
+                        Server.scheduler.enter(
                             10*60,
                             1,
                             self.restart,
@@ -243,7 +243,7 @@ class Server:
                 else:
                     # Schedule the restart events as planned in the configuration.
                     self.restartEvents.append(
-                        Server.serverScheduler.enter(
+                        Server.scheduler.enter(
                             self.config['RESTART_TIME'] - upTime - 10*60,
                             1,
                             self.restartWarning,
@@ -252,7 +252,7 @@ class Server:
                     )
 
                     self.restartEvents.append(
-                        Server.serverScheduler.enter(
+                        Server.scheduler.enter(
                             self.config['RESTART_TIME'] - upTime - 5*60,
                             1,
                             self.restartWarning,
@@ -261,7 +261,7 @@ class Server:
                     )
 
                     self.restartEvents.append(
-                        Server.serverScheduler.enter(
+                        Server.scheduler.enter(
                             self.config['RESTART_TIME'] - upTime - 1*60,
                             1,
                             self.restartWarning,
@@ -270,7 +270,7 @@ class Server:
                     )
 
                     self.restartEvents.append(
-                        Server.serverScheduler.enter(
+                        Server.scheduler.enter(
                             self.config['RESTART_TIME'] - upTime,
                             1,
                             self.restart,
@@ -292,7 +292,7 @@ class Server:
 
         for event in self.restartEvents:
             try:
-                Server.serverScheduler.cancel(event)
+                Server.scheduler.cancel(event)
             except ValueError:
                 # Event was no longer on the queue
                 pass

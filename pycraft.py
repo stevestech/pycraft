@@ -90,7 +90,7 @@ class Pycraft:
             o.start()
 
 
-        # Main thread will now call the run method in server.Server.serverScheduler, which will
+        # Main thread will now call the run method in server.Server.scheduler, which will
         # perform server check and server restart events as scheduled, and will call time.sleep
         # between events.
         server.Server.run()
