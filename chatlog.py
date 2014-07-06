@@ -17,15 +17,15 @@ class FMLLogHandler(watchdog.events.PatternMatchingEventHandler):
     the file and saving them in chatlog.txt.
     """
 
-    def __init__(self, config):
-        # Call constructor from parent class
-        super(FMLLogHandler, self).__init__()
-        
+    def __init__(self, config):        
         # Save config dictionary as an instance variable
-        self.config = config
+        self.config = config   
 
-        # Files matching these patterns will be monitored for events
-        self.patterns = [self.config['SERVER_PATH'] + '/ForgeModLoader-server-0.log']
+        # Call constructor from parent class
+        super(FMLLogHandler, self).__init__(
+            # Files matching these patterns will be monitored for events
+            patterns=[self.config['SERVER_PATH'] + '/ForgeModLoader-server-0.log']
+        )
 
         # Compile commonly used regular expressions
         self.colourRegEx = re.compile(u"""
