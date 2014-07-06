@@ -4,6 +4,8 @@
 # Library modules
 import codecs
 import re
+
+# Third-party modules
 import watchdog.events
 import watchdog.observers
 
