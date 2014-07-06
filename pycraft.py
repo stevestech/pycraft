@@ -7,6 +7,7 @@ Each server has its own configuration options which are defined in config.py.
 """
 
 # Library modules
+import logging
 import signal
 import sys
 
@@ -47,6 +48,8 @@ class Pycraft:
 
         # Register Pycraft.stop() as the function to call when the OS sends any of
         # the following signals
+        logging.info('Registering signal handlers.')
+
         for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGHUP, signal.SIGQUIT]:
             signal.signal(sig, Pycraft.stop)
 
@@ -78,6 +81,12 @@ class Pycraft:
 
         # Tell any chatlog observers to begin running in their seperate threads.
         for o in Pycraft.observerInstances:
+            logging.info(
+                'Starting FMLLogObserver for {SERVER_NICK} server.'.format(
+                    SERVER_NICK=o.config['SERVER_NICK']
+                )
+            )
+
             o.start()
 
 
@@ -94,6 +103,8 @@ class Pycraft:
         should exit.
         """
 
+        logging.info('Pycraft is stopping.')
+
         # Stop any FMLLogObserver threads that may be running,
         # then wait for them to finish.
         for o in Pycraft.observerInstances:
@@ -105,7 +116,14 @@ class Pycraft:
         sys.exit(0)
 
 
-# Don't execute if this module was imported. Only execute if this is the main module.
+# Only execute if this is the main module.
+# Don't configure the logger or begin execution if this module was imported.
 if __name__ == "__main__":
+    logging.basicConfig(
+        format='%(asctime)s %(levelname)s %(message)s',
+        filename='pycraft.log',
+        level=logging.DEBUG
+    )
+
     Pycraft.init()
     Pycraft.run()

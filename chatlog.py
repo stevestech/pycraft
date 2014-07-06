@@ -3,6 +3,7 @@
 
 # Library modules
 import codecs
+import logging
 import re
 
 # Third-party modules
@@ -19,9 +20,15 @@ class FMLLogHandler(watchdog.events.PatternMatchingEventHandler):
     the file and saving them in chatlog.txt.
     """
 
-    def __init__(self, config):        
+    def __init__(self, config):
+        logging.info(
+            'Initialising FMLLogHandler for {SERVER_NICK} server.'.format(
+                SERVER_NICK=config['SERVER_NICK']
+            )
+        )
+
         # Save config dictionary as an instance variable
-        self.config = config   
+        self.config = config
 
         # Call constructor from parent class
         super(FMLLogHandler, self).__init__(
@@ -30,30 +37,36 @@ class FMLLogHandler(watchdog.events.PatternMatchingEventHandler):
         )
 
         # Compile commonly used regular expressions
-        self.colourRegEx = re.compile(u"""
-            \x1b        # UTF-8 character code point at start of colour code
-            .+?         # Match any characters apart from newline non-greedily
-            m           # Colour codes always terminate with m
-            """,
+        self.colourRegEx = re.compile(
+                u"""
+                \x1b        # UTF-8 character code point at start of colour code
+                .+?         # Match any characters apart from newline non-greedily
+                m           # Colour codes always terminate with m
+                """,
             re.VERBOSE)
 
-        self.chatRegEx = re.compile(ur"""
-           # Capture the date and time of message
-           (?P<date>\d\d\d\d-\d\d-\d\d\ \d\d\:\d\d\:\d\d)
+        self.chatRegEx = re.compile(
+                ur"""
+                # Capture the date and time of message
+                (?P<date>\d\d\d\d-\d\d-\d\d\ \d\d\:\d\d\:\d\d)
 
-           # Capture the user name and prefix of the user
-           # (?:...) syntax for a non-capturing group, useful with the | operator
-           # A|B match either regex A or regex B
-           # .+? will match any characters apart from newline non-greedily
-           \ \[INFO\]\ \[(?:MyTown|Dynmap)\]\ (?P<username>.+?\:)
+                # Capture the user name and prefix of the user
+                # (?:...) syntax for a non-capturing group, useful with the | operator
+                # A|B match either regex A or regex B
+                # .+? will match any characters apart from newline non-greedily
+                \ \[INFO\]\ \[(?:MyTown|Dynmap)\]\ (?P<username>.+?\:)
 
-           # Capture the chat message
-           \ (?P<message>.+)""",
-           re.VERBOSE)
+                # Capture the chat message
+                \ (?P<message>.+)""",
+            re.VERBOSE
+        )
 
-        self.broadcastRegEx = re.compile(ur'(?P<date>\d\d\d\d-\d\d-\d\d \d\d\:\d\d\:\d\d)'
-                                         + ur' \[INFO\] \[Minecraft\-Server\] \[Server\]'
-                                         + ur' (?P<message>.+)')
+        self.broadcastRegEx = re.compile(
+            ur'(?P<date>\d\d\d\d-\d\d-\d\d \d\d\:\d\d\:\d\d)'
+            + ur' \[INFO\] \[Minecraft\-Server\] \[Server\]'
+            + ur' (?P<message>.+)'
+        )
+
 
     def on_moved(self, event):
         """
@@ -68,20 +81,33 @@ class FMLLogHandler(watchdog.events.PatternMatchingEventHandler):
         """
 
         if event.dest_path == self.config['SERVER_PATH'] + '/ForgeModLoader-server-1.log':
+            logging.info(
+                'Appending to chatlog for {SERVER_NICK} server.'.format(
+                    SERVER_NICK=self.config['SERVER_NICK']
+                )
+            )
 
-            with codecs.open(self.config['SERVER_PATH'] + '/chatlog.txt',
-                             'a', encoding='utf-8') as chatLog:
+            with codecs.open(
+                self.config['SERVER_PATH'] + '/chatlog.txt',
+                mode='a',
+                encoding='utf-8'
+            ) as chatLog:
 
-                with codecs.open(self.config['SERVER_PATH'] + '/ForgeModLoader-server-1.log',
-                                 'r', encoding='utf-8') as fmlLog:
+                with codecs.open(
+                    self.config['SERVER_PATH'] + '/ForgeModLoader-server-1.log',
+                    mode='r',
+                    encoding='utf-8'
+                ) as fmlLog:
 
                     fmlLine = fmlLog.readline()
 
                     if fmlLine:
                         # Find the date and time from the first log entry
 
-                        match = re.match(ur'(\d\d\d\d-\d\d-\d\d \d\d\:\d\d\:\d\d)',
-                                         fmlLine)
+                        match = re.match(
+                            ur'(\d\d\d\d-\d\d-\d\d \d\d\:\d\d\:\d\d)',
+                            fmlLine
+                        )
 
                         if match:
                             # The first line appended to chatlog.txt should announce that the server is starting
@@ -132,6 +158,12 @@ class FMLLogHandler(watchdog.events.PatternMatchingEventHandler):
 
                                 fmlLine = fmlLog.readline()
 
+            logging.info(
+                'Completed extracting chat entries for {SERVER_NICK} server.'.format(
+                    SERVER_NICK=self.config['SERVER_NICK']
+                )
+            )
+
 
 class FMLLogObserver(watchdog.observers.Observer):
     """
@@ -144,6 +176,12 @@ class FMLLogObserver(watchdog.observers.Observer):
         Configure the observer so that all the main execution module needs to do is call this class's start()
         method to launch the observer in a new thread.
         """
+
+        logging.info(
+            'Initialising FMLLogObserver for {SERVER_NICK} server.'.format(
+                SERVER_NICK=config['SERVER_NICK']
+            )
+        )
 
         # We are overriding the constructor of an inherited class, so it's probably a good idea to call the
         # parent's constructor method first!

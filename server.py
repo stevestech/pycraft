@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Library modules
+import logging
 import sched
 import socket
 import subprocess
@@ -28,6 +29,8 @@ class Server:
         run time.sleep in between events.
         """
 
+        logging.info('Running serverScheduler.')
+
         Server.serverScheduler.run()
 
 
@@ -35,6 +38,12 @@ class Server:
         """
         Constructor to initialise the Server class.
         """
+
+        logging.info(
+            'Initialising {SERVER_NICK} server.'.format(
+                SERVER_NICK=config['SERVER_NICK']
+            )
+        )
 
         # A dictionary containing all configuration options for this server
         self.config = config
@@ -60,6 +69,13 @@ class Server:
         Execute a server command by calling the stuff command on the screen session
         which contains the Minecraft server console.
         """
+
+        logging.debug(
+            'Sending the following command to {SERVER_NICK} server:\n{COMMAND}'.format(
+                SERVER_NICK=self.config['SERVER_NICK'],
+                COMMAND=command
+            )
+        )
 
         # Stuffing commands into a screen session too quickly is a bad idea.
         time.sleep(1)
@@ -130,6 +146,13 @@ class Server:
         self.check() method.
         """
 
+        logging.debug(
+            'Scheduling a server check for {SERVER_NICK}. Immediate: {IMMEDIATE}.'.format(
+                SERVER_NICK=self.config['SERVER_NICK'],
+                IMMEDIATE=immediate
+            )
+        )
+
         if immediate:
             # Schedule an immediate server check
             Server.serverScheduler.enter(
@@ -157,7 +180,13 @@ class Server:
         leadup to the restart, and the restart itself.
         """
 
-        if self.config['ENABLE_AUTOMATED_RESTARTS']:        
+        if self.config['ENABLE_AUTOMATED_RESTARTS']:
+            logging.debug(
+                'Scheduling restart and restart warnings for {SERVER_NICK} server.'.format(
+                    SERVER_NICK=self.config['SERVER_NICK']
+                )
+            )
+
             upTime = self.getUptime()
 
             if upTime is not None:
@@ -245,6 +274,12 @@ class Server:
         Cancel any future restart events from the server scheduler
         """
 
+        logging.debug(
+            'Cancelling restart events for {SERVER_NICK} server.'.format(
+                SERVER_NICK=self.config['SERVER_NICK']
+            )
+        )
+
         for event in self.restartEvents:
             try:
                 Server.serverScheduler.cancel(event)
@@ -270,6 +305,12 @@ class Server:
 
         External calls should use stop() instead.
         """
+
+        logging.warning(
+            'Sending SIGKILL signal to {SERVER_NICK} server.'.format(
+                SERVER_NICK=self.config['SERVER_NICK']
+            )
+        )
 
         subprocess.call(
             'pkill -SIGKILL -f '
@@ -298,6 +339,12 @@ class Server:
         Attempt to stop server gracefully, else stop forcefully.
         """
 
+        logging.info(
+            'Stopping {SERVER_NICK} server.'.format(
+                SERVER_NICK=self.config['SERVER_NICK']
+            )
+        )
+
         # Prevent any restart events from being executed on the stopped server
         self.cancelRestartEvents()
 
@@ -311,6 +358,12 @@ class Server:
             time.sleep(5)
 
             if not self.isOnline():
+                logging.info(
+                    '{SERVER_NICK} server was closed gracefully.'.format(
+                        SERVER_NICK=self.config['SERVER_NICK']
+                    )
+                )
+
                 return
 
         # If process did not terminate, then stop forcefully.
@@ -320,7 +373,13 @@ class Server:
     def start(self):
         """
         Create a new screen session for the server and execute the server start script
-        """        
+        """
+
+        logging.info(
+            'Starting {SERVER_NICK} server.'.format(
+                SERVER_NICK=self.config['SERVER_NICK']
+            )
+        )
 
         # Just in case there is an existing screen session from a previous server
         # instance.
@@ -360,8 +419,6 @@ class Server:
         # the process to be running in order to calculate the restart times.
         time.sleep(5)
         self.scheduleRestarts()
-
-        # TODO: schedule server check.
 
 
     def restart(self):
@@ -414,9 +471,21 @@ class Server:
             """
 
         except (socket.error, socket.timeout, AssertionError, IndexError):
+            logging.debug(
+                'Network responsiveness test for {SERVER_NICK} returning False.'.format(
+                    SERVER_NICK=self.config['SERVER_NICK']
+                )
+            )
+
             return False
 
         else:
+            logging.debug(
+                'Network responsiveness test for {SERVER_NICK} returning True.'.format(
+                    SERVER_NICK=self.config['SERVER_NICK']
+                )
+            )
+
             return True
 
 
@@ -425,6 +494,12 @@ class Server:
         Compare the desired state with the actual state of the server,
         and take action as necessary.
         """
+
+        logging.debug(
+            'Beginning server check of {SERVER_NICK} server.'.format(
+                SERVER_NICK=self.config['SERVER_NICK']
+            )
+        )
 
         # List of process IDs of Java Runtime Environment processes currently
         # executing the Minecraft server.
@@ -435,6 +510,16 @@ class Server:
             # Multiple instances of this server are running simultaneously. Kill the ones
             # most recently started, leaving one remaining.
 
+            logging.warning(
+                'Multiple instances of {SERVER_NICK} server are running simultaneously.'.format(
+                    SERVER_NICK=self.config['SERVER_NICK']
+                )
+                + ' Number of processes found: {NUM_PROCESSES}'.format(
+                    NUM_PROCESSES=len(serverPIDs)
+                )
+            )
+
+
             newestProcess = psutil.Process(serverPIDs[0])
 
             for p in serverPIDs:                
@@ -443,6 +528,16 @@ class Server:
                 if process.create_time > newestProcess.create_time:
                     newestProcess = process
 
+
+            logging.warning(
+                'Terminating process number {PID}, an instance of {SERVER_NICK} server.'.format(
+                    PID=newestProcess.pid,
+                    SERVER_NICK=self.config['SERVER_NICK']
+                )
+                + ' Process was originally started with the following command:\n{START_COMMAND}'.format(
+                    START_COMMAND=newestProcess.cmdline()
+                )
+            )
 
             newestProcess.terminate()
 
@@ -457,17 +552,29 @@ class Server:
                 newestProcess.kill()
 
             time.sleep(5)
-            assert not newestProcess.is_running()
             serverPIDs = self.getServerPIDs()
 
 
         if self.online:
             # Minecraft server should currently be online and responsive
 
-            if len(serverPIDs) == 0:                
+            if len(serverPIDs) == 0:
+                logging.debug(
+                    '{SERVER_NICK} server is desired to be online, but no process was found.'.format(
+                        SERVER_NICK=self.config['SERVER_NICK']
+                    )
+                    + ' Server will now be started.'
+                )
+
                 self.start()
 
             elif len(serverPIDs) == 1:
+                logging.debug(
+                    '{SERVER_NICK} server is desired to be online, and is currently running.'.format(
+                        SERVER_NICK=self.config['SERVER_NICK']
+                    )
+                )
+
                 if self.config['ENABLE_RESPONSIVENESS_CHECK']:
                     upTime = self.getUptime()
 
@@ -486,13 +593,35 @@ class Server:
                                 prevResults.append(self.isResponsive())
 
                                 if prevResults.count(False) >= 3:
+                                    logging.warning(
+                                        '{SERVER_NICK} server has failed three network'.format(
+                                            SERVER_NICK=self.config['SERVER_NICK']
+                                        )
+                                        + ' responsiveness tests, and will now be restarted.'
+                                    )
+
                                     self.restart()
                                     break            
 
         else:
             # Minecraft server should be offline
             if len(serverPIDs) > 0:
+                logging.debug(
+                    '{SERVER_NICK} server is desired to be offline, but instances of this'.format(
+                        SERVER_NICK=self.config['SERVER_NICK']
+                    )
+                    + ' server are currently running. Server will now be stopped.'
+                )
+
                 self.stop()
+
+            else:
+                logging.debug(
+                    '{SERVER_NICK} server is desired to be offline, and no instances of the'.format(
+                        SERVER_NICK=self.config['SERVER_NICK']
+                    )
+                    + ' server are currently running.'
+                )
 
 
         # Tell the scheduler to call the self.check method again in 60 seconds

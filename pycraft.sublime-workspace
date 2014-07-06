@@ -4,15 +4,39 @@
 		"selected_items":
 		[
 			[
-				"server",
-				"serverInstances"
+				"START",
+				"START_COMMAND"
 			],
 			[
-				"schedule",
-				"scheduleCheck"
+				"ser",
+				"serverPIDs"
+			],
+			[
+				"Ser",
+				"SERVER_NICK"
+			],
+			[
+				"FMLL",
+				"FMLLogObserver"
+			],
+			[
+				"SERVER",
+				"SERVER_NICK"
+			],
+			[
+				"SERV",
+				"SERVER_NICK"
 			],
 			[
 				"sched",
+				"scheduleRestarts"
+			],
+			[
+				"server",
+				"serverScheduler"
+			],
+			[
+				"schedule",
 				"scheduleCheck"
 			],
 			[
@@ -87,15 +111,15 @@
 			"file": "pycraft.py",
 			"settings":
 			{
-				"buffer_size": 4031,
-				"line_ending": "Unix"
+				"buffer_size": 3649,
+				"line_ending": "Windows"
 			}
 		},
 		{
 			"file": "chatlog.py",
 			"settings":
 			{
-				"buffer_size": 6449,
+				"buffer_size": 7426,
 				"line_ending": "Unix"
 			}
 		},
@@ -111,15 +135,15 @@
 			"file": "server.py",
 			"settings":
 			{
-				"buffer_size": 14731,
-				"line_ending": "Unix"
+				"buffer_size": 20054,
+				"line_ending": "Windows"
 			}
 		},
 		{
 			"file": "README.md",
 			"settings":
 			{
-				"buffer_size": 846,
+				"buffer_size": 1056,
 				"line_ending": "Windows"
 			}
 		}
@@ -180,6 +204,7 @@
 	},
 	"file_history":
 	[
+		"/C/Users/Francis/Documents/Python Projects/pycraft/logger.py",
 		"/C/Users/Francis/Documents/Python Projects/mc-crash-detector.sh",
 		"/C/Users/Francis/Documents/Python Projects/mc_wrapper/chatlog.py",
 		"/C/Users/Francis/Documents/Python Projects/mc_wrapper/config.py",
@@ -247,15 +272,15 @@
 					"file": "pycraft.py",
 					"settings":
 					{
-						"buffer_size": 4031,
+						"buffer_size": 3649,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3993,
-								3993
+								3604,
+								3604
 							]
 						],
 						"settings":
@@ -354,7 +379,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1080.0,
+						"translation.y": 1260.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -364,15 +389,15 @@
 					"file": "chatlog.py",
 					"settings":
 					{
-						"buffer_size": 6449,
+						"buffer_size": 7426,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								205,
-								205
+								7365,
+								7365
 							]
 						],
 						"settings":
@@ -471,7 +496,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1741.0,
+						"translation.y": 2160.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -598,15 +623,15 @@
 					"file": "server.py",
 					"settings":
 					{
-						"buffer_size": 14731,
+						"buffer_size": 20054,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								649,
-								650
+								20053,
+								20053
 							]
 						],
 						"settings":
@@ -705,7 +730,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 270.0,
+						"translation.y": 5502.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -715,15 +740,15 @@
 					"file": "README.md",
 					"settings":
 					{
-						"buffer_size": 846,
+						"buffer_size": 1056,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								846,
-								846
+								955,
+								955
 							]
 						],
 						"settings":
