@@ -12,12 +12,22 @@ import psutil
 
 
 class Server:
-    # Class / static variable containing an instance of the sched.scheduler
+    # Unbound variable containing an instance of the sched.scheduler
     # class, used to schedule restart and server check events across all servers.
     serverScheduler = sched.scheduler(
         time.time,
         time.sleep
     )
+
+
+    def run():
+        """
+        Unbound method which hands execution over to the serverScheduler.
+        serverScheduler will run server restart and server check events as scheduled, and will
+        run time.sleep in between events.
+        """
+
+        Server.serverScheduler.run()
 
 
     def __init__(self, config):
@@ -38,6 +48,10 @@ class Server:
 
         # This list holds all future restart events. Used for event cancellations.
         self.restartEvents = []
+
+        # Schedule initial restart and server check events.
+        self.scheduleCheck()
+        self.scheduleRestarts()
 
 
     def sendCommand(self, command):

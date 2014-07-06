@@ -1,10 +1,15 @@
+=======
 pycraft
 =======
+
+Description
+===========
 
 A Minecraft server wrapper which can monitor and maintain multiple Minecraft server processes.
 Each server has its own configuration options which are defined in config.py.
 
-Features:
+Features
+========
 *   Automated restarts, preceded by warning broadcasts to the players.
 *   Server processes are monitored to ensure that each running server has one corresponding
     system process.
@@ -14,4 +19,9 @@ Features:
     signal will be sent to the process if it does not terminate within 60 seconds.
 *   Can start each screen session in multiuser mode, with a custom list of authorised users
     for each server.
+
+Required third-party Python modules
+===================================
+[psutil](https://github.com/giampaolo/psutil)
+[watchdog](https://pypi.python.org/pypi/watchdog)
     
