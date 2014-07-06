@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 # This server wrapper can monitor multiple servers. Each server must have a unique nick and a unique jar name.
 # The config variable is a list of all the servers to be monitored. The list contains dictionaries.
 # Each dictionary contains a complete set of configuration options for one particular server.

@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 """
 A Minecraft server wrapper which can monitor and maintain multiple Minecraft server processes.
 Each server has its own configuration options which are defined in config.py.
@@ -33,8 +35,13 @@ __email__ = "francisbaster@gmail.com"
 __status__ = "Development"
 
 
-class MC_wrapper:
-    # Unbound / static variables:
+class Pycraft:
+    """    
+    Used to encapsulate unbound variables, and provides functions to initialise, run
+    and stop Pycraft. All functions and variables are unbound, this class is not meant
+    to be instantiated.
+    """
+
     # A list to contain instances of the server.Server class
     serverInstances = []
 
@@ -44,20 +51,21 @@ class MC_wrapper:
 
     def init():
         """
-        Perform initialisation tasks.
+        Perform initialisation tasks. This class is not meant to be instantiated,
+        so __init__ is not used.
         """
 
-        # Register MC_wrapper.stop() as the function to call when the OS sends any of
+        # Register Pycraft.stop() as the function to call when the OS sends any of
         # the following signals
         for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGHUP, signal.SIGQUIT]:
-            signal.signal(sig, MC_wrapper.stop)
+            signal.signal(sig, Pycraft.stop)
 
 
         # Add new instances of the server.Server class to the serverInstances list, and initialise
         # them with the corresponding config dictionary.
 
         for configDict in config.config:
-            MC_wrapper.serverInstances.append(
+            Pycraft.serverInstances.append(
                 server.Server(configDict)
             )
 
@@ -65,9 +73,9 @@ class MC_wrapper:
         # For each server that is configured to have a chatlog, instantiate a FMLLogObserver
         # class to monitor that server's log file and extract the chat entries to a chatlog.
 
-        for s in MC_wrapper.serverInstances:
+        for s in Pycraft.serverInstances:
             if s.config['ENABLE_CHATLOG']:
-                MC_wrapper.observerInstances.append(
+                Pycraft.observerInstances.append(
                     chatlog.FMLLogObserver(s.config)
                 )
 
@@ -78,18 +86,18 @@ class MC_wrapper:
         """
 
         # Tell any chatlog observers to begin running in their seperate threads.
-        for o in MC_wrapper.observerInstances:
+        for o in Pycraft.observerInstances:
             o.start()
 
 
         # Schedule the first server check for each of the instantiated servers. Each time the
         # server check method completes, it will reschedule itself to run again in 60 seconds.
 
-        for s in MC_wrapper.serverInstances:
+        for s in Pycraft.serverInstances:
             s.scheduleCheck()
 
 
-        # Main thread will now call the run function in server.Server.serverScheduler, which will
+        # Main thread will now call the run method in server.Server.serverScheduler, which will
         # perform server check and server restart events as scheduled, and will call time.sleep
         # between events.
 
@@ -104,16 +112,16 @@ class MC_wrapper:
 
         # Stop any FMLLogObserver threads that may be running,
         # then wait for them to finish.
-        for o in MC_wrapper.observerInstances:
+        for o in Pycraft.observerInstances:
             o.stop()
 
-        for o in MC_wrapper.observerInstances:
+        for o in Pycraft.observerInstances:
             o.join()
 
         sys.exit(0)
 
 
-# Don't execute if this module was imported. This must be the main module.
+# Don't execute if this module was imported. Only execute if this is the main module.
 if __name__ == "__main__":
-    MC_wrapper.init()
-    MC_wrapper.run()
+    Pycraft.init()
+    Pycraft.run()
