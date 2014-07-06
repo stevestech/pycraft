@@ -180,7 +180,17 @@ class Server:
         leadup to the restart, and the restart itself.
         """
 
-        if self.config['ENABLE_AUTOMATED_RESTARTS']:
+        # Only schedule restarts if all conditions met:
+        # Restarts are enabled in config for this server,
+        # Restarts have not already been scheduled for this server,
+        # This server is in the online state.
+
+        # NOTE: self.restartEvents will reset next time server stops / restarts
+
+        if self.config['ENABLE_AUTOMATED_RESTARTS'] \
+                and len(self.restartEvents) == 0    \
+                and self.online:
+
             logging.debug(
                 'Scheduling restart and restart warnings for {SERVER_NICK} server.'.format(
                     SERVER_NICK=self.config['SERVER_NICK']
