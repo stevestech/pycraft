@@ -349,35 +349,39 @@ class Server:
         Attempt to stop server gracefully, else stop forcefully.
         """
 
-        logging.info(
-            'Stopping {SERVER_NICK} server.'.format(
-                SERVER_NICK=self.config['SERVER_NICK']
-            )
-        )
+        # Don't stop if server already offline
+        if self.online and self.isOnline():
 
-        # Prevent any restart events from being executed on the stopped server
-        self.cancelRestartEvents()
-
-        self.sendCommand('stop')
-
-        # Update state variable to indicate that the server should now be offline
-        self.online = False        
-
-        # Wait 60 seconds for process to terminate
-        for index in range(12):
-            time.sleep(5)
-
-            if not self.isOnline():
-                logging.info(
-                    '{SERVER_NICK} server was closed gracefully.'.format(
-                        SERVER_NICK=self.config['SERVER_NICK']
-                    )
+            logging.info(
+                'Stopping {SERVER_NICK} server.'.format(
+                    SERVER_NICK=self.config['SERVER_NICK']
                 )
+            )
 
-                return
+            # Prevent any restart events from being executed on the stopped server
+            self.cancelRestartEvents()
 
-        # If process did not terminate, then stop forcefully.
-        self.killServer()
+            self.sendCommand('stop')
+
+            # Update state variable to indicate that the server should now be offline
+            self.online = False
+
+            # Wait 60 seconds for process to terminate
+            for index in range(12):
+                time.sleep(5)
+
+                if not self.isOnline():
+
+                    logging.info(
+                        '{SERVER_NICK} server was closed gracefully.'.format(
+                            SERVER_NICK=self.config['SERVER_NICK']
+                        )
+                    )
+
+                    return
+
+            # If process did not terminate, then stop forcefully.
+            self.killServer()
 
     
     def start(self):
@@ -385,50 +389,53 @@ class Server:
         Create a new screen session for the server and execute the server start script
         """
 
-        logging.info(
-            'Starting {SERVER_NICK} server.'.format(
-                SERVER_NICK=self.config['SERVER_NICK']
+        # Don't start if server already running
+        if not self.online and not self.isOnline():
+
+            logging.info(
+                'Starting {SERVER_NICK} server.'.format(
+                    SERVER_NICK=self.config['SERVER_NICK']
+                )
             )
-        )
 
-        # Just in case there is an existing screen session from a previous server
-        # instance.
-        self.quitScreenSession()
+            # Just in case there is an existing screen session from a previous server
+            # instance.
+            self.quitScreenSession()
 
-        subprocess.call(
-            'screen -d -m -S '
-            + self.config['SERVER_NICK']
-            + ' '
-            + self.config['SERVER_PATH']
-            + '/'
-            + self.config['START_SCRIPT'],
-            shell=True
-        )
-        
-        if self.config['MULTIUSER_ENABLED']:
             subprocess.call(
-                'screen -S '
+                'screen -d -m -S '
                 + self.config['SERVER_NICK']
-                + ' -X multiuser on',
+                + ' '
+                + self.config['SERVER_PATH']
+                + '/'
+                + self.config['START_SCRIPT'],
                 shell=True
             )
 
-            for user in self.config['AUTHORISED_ACCOUNTS']:
+            if self.config['MULTIUSER_ENABLED']:
                 subprocess.call(
                     'screen -S '
                     + self.config['SERVER_NICK']
-                    + ' -X acladd '
-                    + user,
+                    + ' -X multiuser on',
                     shell=True
                 )
 
-        # Update state variable to indicate that the server should now be online
-        self.online = True           
+                for user in self.config['AUTHORISED_ACCOUNTS']:
+                    subprocess.call(
+                        'screen -S '
+                        + self.config['SERVER_NICK']
+                        + ' -X acladd '
+                        + user,
+                        shell=True
+                    )
 
-        # Give OS a chance to launch the process, as scheduleRestarts requires
-        # the process to be running in order to calculate the restart times.
-        time.sleep(5)
-        self.scheduleRestarts()
+            # Update state variable to indicate that the server should now be online
+            self.online = True
+
+            # Give OS a chance to launch the process, as scheduleRestarts requires
+            # the process to be running in order to calculate the restart times.
+            time.sleep(5)
+            self.scheduleRestarts()
 
 
     def restart(self):
