@@ -183,6 +183,9 @@ class FMLLogObserver(watchdog.observers.Observer):
             )
         )
 
+        # Used for logging purposes
+        self.serverNick = config['SERVER_NICK']
+
         # We are overriding the constructor of an inherited class, so it's probably a good idea to call the
         # parent's constructor method first!
         super(FMLLogObserver, self).__init__()

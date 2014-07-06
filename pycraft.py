@@ -83,7 +83,7 @@ class Pycraft:
         for o in Pycraft.observerInstances:
             logging.info(
                 'Starting FMLLogObserver for {SERVER_NICK} server.'.format(
-                    SERVER_NICK=o.config['SERVER_NICK']
+                    SERVER_NICK=o.serverNick
                 )
             )
 
