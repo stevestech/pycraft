@@ -20,9 +20,10 @@ class Server:
     )
 
 
+    @staticmethod
     def run():
         """
-        Unbound method which hands execution over to the serverScheduler.
+        Static method which hands execution over to the serverScheduler.
         serverScheduler will run server restart and server check events as scheduled, and will
         run time.sleep in between events.
         """

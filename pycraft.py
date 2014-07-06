@@ -26,8 +26,8 @@ __status__ = "Development"
 
 class Pycraft:
     """    
-    Used to encapsulate unbound variables, and provides functions to initialise, run
-    and stop Pycraft. All functions and variables are unbound, this class is not meant
+    Used to encapsulate unbound members, and provides functions to initialise, run
+    and stop Pycraft. All functions and members are unbound / static, this class is not meant
     to be instantiated.
     """
 
@@ -38,9 +38,10 @@ class Pycraft:
     observerInstances = []
 
 
+    @staticmethod
     def init():
         """
-        Perform initialisation tasks. This class is not meant to be instantiated,
+        Perform initialisation tasks. This method is for initalising unbound members,
         so __init__ is not used.
         """
 
@@ -69,6 +70,7 @@ class Pycraft:
                 )
 
 
+    @staticmethod
     def run():
         """
         Begin execution of the server wrapper
@@ -85,6 +87,7 @@ class Pycraft:
         server.Server.run()
 
 
+    @staticmethod
     def stop(signum=None, frame=None):
         """
         Handles any signals sent from the OS which indicate that this program
