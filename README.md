@@ -18,6 +18,14 @@ Features
 *   Can start each screen session in multiuser mode, with a custom list of authorised users
     for each server.
 
+System requirements
+-------------------
+UNIX-like operating system with the following executables on the system path:
+*   python
+*   screen
+*   pgrep
+*   pkill
+
 Required third-party Python modules
 -----------------------------------
 [psutil](https://github.com/giampaolo/psutil)  
