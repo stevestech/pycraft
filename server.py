@@ -132,7 +132,7 @@ class Server:
 
         serverPIDs = self.getPIDs()
 
-        if not self.online or not self.isOnline():
+        if not self.online or len(serverPIDs) == 0:
             return None
 
         else:
