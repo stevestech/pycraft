@@ -383,6 +383,14 @@ class Server:
             # If process did not terminate, then stop forcefully.
             self.killServer()
 
+
+        else:
+            logging.warning(
+                'Attempted to stop {SERVER_NICK} server which was in offline state.'.format(
+                    SERVER_NICK=self.config['SERVER_NICK']
+                )
+            )
+
     
     def start(self):
         """
@@ -436,6 +444,14 @@ class Server:
             # the process to be running in order to calculate the restart times.
             time.sleep(5)
             self.scheduleRestarts()
+
+
+        else:
+            logging.warning(
+                'Attempted to start {SERVER_NICK} server which was in online state.'.format(
+                    SERVER_NICK=self.config['SERVER_NICK']
+                )
+            )
 
 
     def restart(self):
