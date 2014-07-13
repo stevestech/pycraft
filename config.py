@@ -11,7 +11,7 @@ config = [
         'SERVER_NICK': 'test',                                       # Nickname, must be unique to the server being monitored. Used to name the screen session.
         'SERVER_PATH': '/home/minecraft/test',                       # Where the server files are located
         'SERVER_JAR': 'test-server.jar',                             # Name of the server jar file, must be unique to the server being monitored. Used to identify server process.
-        'START_SCRIPT': 'ServerStart.sh',                            # Script with Java parameters used to launch the server
+        'START_SCRIPT': 'ServerStart.sh',                            # This script will be run inside a screen session to start the server. Should include the necessary Java command line arguments.
         
         # Modules
         'ENABLE_CHATLOG': True,                                      # Extract chat entries from ForgeModLoader-server-0.log and record into a chatlog file (Forge servers only)
@@ -19,12 +19,12 @@ config = [
         'ENABLE_AUTOMATED_RESTARTS': True,
         
         # Wrapper
-        'START_SERVER': True,                                        # If set to True, starting mc-daemon will launch the server automatically.
+        'START_SERVER': True,                                        # If set to True, starting pycraft will launch the server automatically.
         'MULTIUSER_ENABLED': True,                                   # Should screen session be configured to use multiuser mode.
         'AUTHORISED_ACCOUNTS': [
             'anedaar',
             'JeRoNiMoKaNT'
-        ],                                                           # List of user accounts which will receive permission to access the multiuser screen session containing the server console.
+        ],                                                           # List of OS user accounts which will receive permission to access the multiuser screen session containing the server console.
 
         # Responsiveness module
         'HOSTNAME': 'localhost',                                     # The hostname (URL or IP address) of the server to be monitored. Use localhost or 127.0.0.1 for servers on this machine.
