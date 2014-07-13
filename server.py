@@ -100,6 +100,7 @@ class Server:
         # self.lock is used to protect member variables, and also server methods
         # which write to these members. Such methods could be called by stdin or network handler threads.
         # It is a reentrant lock, and can be acquired multiple times by the same thread.
+
         self._lock = threading.RLock()
         
         # Acquires lock and automatically releases it under any circumstance where execution moves
@@ -136,25 +137,26 @@ class Server:
         which contains the Minecraft server console.
         """
 
-        logging.info(
-            'Sending the following command to {SERVER_NICK} server:\n{COMMAND}'.format(
-                SERVER_NICK=self._config['SERVER_NICK'],
-                COMMAND=command
+        with self._lock:
+            logging.info(
+                'Sending the following command to {SERVER_NICK} server:\n{COMMAND}'.format(
+                    SERVER_NICK=self._config['SERVER_NICK'],
+                    COMMAND=command
+                )
             )
-        )
 
-        # Stuffing commands into a screen session too quickly is a bad idea.
-        time.sleep(1)
+            # Stuffing commands into a screen session too quickly is a bad idea.
+            time.sleep(1)
 
-        # Send stuff command to screen session. Screen session is named with server nick.
-        # \r simulates the return key and causes the command to be executed.
-        Server._executeInShell(
-            'screen -p 0 -S '
-            + self._config['SERVER_NICK']
-            + ' -X stuff "\r'
-            + command
-            + '\r"',
-        )
+            # Send stuff command to screen session. Screen session is named with server nick.
+            # \r simulates the return key and causes the command to be executed.
+            Server._executeInShell(
+                'screen -p 0 -S '
+                + self._config['SERVER_NICK']
+                + ' -X stuff "\r'
+                + command
+                + '\r"',
+            )
 
 
     def _getPIDs(self):
@@ -162,24 +164,25 @@ class Server:
         Returns a list of integers containing the PIDs of each Java Runtime Environment currently
         executing the server jar-file
         """
-    
-        try:
-            pgrep_output = subprocess.check_output(
-                'pgrep -f ' + self._config['SERVER_JAR'],
-                shell=True
-            )
 
-        except subprocess.CalledProcessError:
-            # pgrep found no matches, and returned non-zero. Return empty list.
-            return []
-    
-        pgrep_output_list = pgrep_output.split()
+        with self._lock:    
+            try:
+                pgrep_output = subprocess.check_output(
+                    'pgrep -f ' + self._config['SERVER_JAR'],
+                    shell=True
+                )
 
-        # Convert from list of strings to list of integers
-        for index in range(len(pgrep_output_list)):
-            pgrep_output_list[index] = int(pgrep_output_list[index])
+            except subprocess.CalledProcessError:
+                # pgrep found no matches, and returned non-zero. Return empty list.
+                return []
+        
+            pgrep_output_list = pgrep_output.split()
 
-        return pgrep_output_list
+            # Convert from list of strings to list of integers
+            for index in range(len(pgrep_output_list)):
+                pgrep_output_list[index] = int(pgrep_output_list[index])
+
+            return pgrep_output_list
 
 
     def isOnline(self):
@@ -211,30 +214,31 @@ class Server:
         self._check() method.
         """
 
-        logging.debug(
-            'Scheduling a server check for {SERVER_NICK}. Immediate: {IMMEDIATE}.'.format(
-                SERVER_NICK=self._config['SERVER_NICK'],
-                IMMEDIATE=immediate
-            )
-        )
-
-        if immediate:
-            # Schedule an immediate server check
-            Server.scheduler.enter(
-                0,
-                1,
-                self._check,
-                ()
+        with self._lock:
+            logging.debug(
+                'Scheduling a server check for {SERVER_NICK}. Immediate: {IMMEDIATE}.'.format(
+                    SERVER_NICK=self._config['SERVER_NICK'],
+                    IMMEDIATE=immediate
+                )
             )
 
-        else:
-            # Schedule a server check in 60 seconds
-            Server.scheduler.enter(
-                60,
-                1,
-                self._check,
-                ()
-            )
+            if immediate:
+                # Schedule an immediate server check
+                Server.scheduler.enter(
+                    0,
+                    1,
+                    self._check,
+                    ()
+                )
+
+            else:
+                # Schedule a server check in 60 seconds
+                Server.scheduler.enter(
+                    60,
+                    1,
+                    self._check,
+                    ()
+                )
 
 
     def _scheduleRestarts(self):
@@ -245,7 +249,7 @@ class Server:
         leadup to the restart, and the restart itself.
         """
 
-        with self.lock:
+        with self._lock:
             # Only schedule restarts if all conditions met:
             # Restarts are enabled in config for this server,
             # Restarts have not already been scheduled for this server,
@@ -349,20 +353,21 @@ class Server:
         Cancel any future restart events from the server scheduler
         """
 
-        logging.debug(
-            'Cancelling restart events for {SERVER_NICK} server.'.format(
-                SERVER_NICK=self._config['SERVER_NICK']
+        with self._lock:
+            logging.debug(
+                'Cancelling restart events for {SERVER_NICK} server.'.format(
+                    SERVER_NICK=self._config['SERVER_NICK']
+                )
             )
-        )
 
-        for event in self._restartEvents:
-            try:
-                Server.scheduler.cancel(event)
-            except ValueError:
-                # Event was no longer on the queue
-                pass
-            
-        self._restartEvents = []
+            for event in self._restartEvents:
+                try:
+                    Server.scheduler.cancel(event)
+                except ValueError:
+                    # Event was no longer on the queue
+                    pass
+                
+            self._restartEvents = []
 
 
     def _restartWarning(self, minutes):
@@ -381,16 +386,17 @@ class Server:
         External calls should use stop() instead.
         """
 
-        logging.warning(
-            'Sending SIGKILL signal to {SERVER_NICK} server.'.format(
-                SERVER_NICK=self._config['SERVER_NICK']
+        with self._lock:
+            logging.warning(
+                'Sending SIGKILL signal to {SERVER_NICK} server.'.format(
+                    SERVER_NICK=self._config['SERVER_NICK']
+                )
             )
-        )
 
-        Server._executeInShell(
-            'pkill -SIGKILL -f '
-            + self._config['SERVER_JAR'],
-        )
+            Server._executeInShell(
+                'pkill -SIGKILL -f '
+                + self._config['SERVER_JAR'],
+            )
 
 
     def _quitScreenSession(self):
@@ -399,12 +405,13 @@ class Server:
         inside the session causing screen not to close with the server process. This would
         otherwise interfere with the sendCommand method.
         """
-        
-        Server._executeInShell(
-            'screen -S '
-            + self._config['SERVER_NICK']
-            + ' -X quit',
-        )
+
+        with self._lock:        
+            Server._executeInShell(
+                'screen -S '
+                + self._config['SERVER_NICK']
+                + ' -X quit',
+            )
 
 
     def stop(self):
@@ -517,9 +524,10 @@ class Server:
 
 
     def restart(self):
-        self.sendCommand('say Server is restarting, see you soon!')
-        self.stop()
-        self.start()
+        with self._lock:
+            self.sendCommand('say Server is restarting, see you soon!')
+            self.stop()
+            self.start()
 
 
     def isResponsive(self):
@@ -528,60 +536,61 @@ class Server:
         for its player count and message of the day.
         """
 
-        try:
-            # Set up our socket
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(10)
-            s.connect((self._config['HOSTNAME'], self._config['PORT']))
+        with self._lock:
+            try:
+                # Set up our socket
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.settimeout(10)
+                s.connect((self._config['HOSTNAME'], self._config['PORT']))
 
-            # Send 0xFE: Server list ping
-            s.send('\xfe\x01')
+                # Send 0xFE: Server list ping
+                s.send('\xfe\x01')
 
-            # Read some data
-            d = s.recv(1024)
-            s.close()
+                # Read some data
+                d = s.recv(1024)
+                s.close()
 
-            # Check we've got a 0xFF Disconnect
-            assert d[0] == '\xff'
+                # Check we've got a 0xFF Disconnect
+                assert d[0] == '\xff'
 
-            # Remove the packet ident (0xFF) and the short containing the length of the string
-            # Decode UCS-2 string
-            d = d[3:].decode('utf-16be')
+                # Remove the packet ident (0xFF) and the short containing the length of the string
+                # Decode UCS-2 string
+                d = d[3:].decode('utf-16be')
 
-            #Check the first 3 characters of the string are what we expect
-            assert d[:3] == u'\xa7\x31\x00'
+                #Check the first 3 characters of the string are what we expect
+                assert d[:3] == u'\xa7\x31\x00'
 
-            """
-            Commented in case the returned information becomes useful:
+                """
+                Commented in case the returned information becomes useful:
 
-            # Split
-            d = d[3:].split('\x00')
-            
-            # Return a dict of values
-            return {'protocol_version': int(d[0]),
-                    'server_version':       d[1],
-                    'motd':                 d[2],
-                    'players':          int(d[3]),
-                    'max_players':      int(d[4])}
-            """
+                # Split
+                d = d[3:].split('\x00')
+                
+                # Return a dict of values
+                return {'protocol_version': int(d[0]),
+                        'server_version':       d[1],
+                        'motd':                 d[2],
+                        'players':          int(d[3]),
+                        'max_players':      int(d[4])}
+                """
 
-        except (socket.error, socket.timeout, AssertionError, IndexError):
-            logging.debug(
-                'Network responsiveness test for {SERVER_NICK} returning False.'.format(
-                    SERVER_NICK=self._config['SERVER_NICK']
+            except (socket.error, socket.timeout, AssertionError, IndexError):
+                logging.debug(
+                    'Network responsiveness test for {SERVER_NICK} returning False.'.format(
+                        SERVER_NICK=self._config['SERVER_NICK']
+                    )
                 )
-            )
 
-            return False
+                return False
 
-        else:
-            logging.debug(
-                'Network responsiveness test for {SERVER_NICK} returning True.'.format(
-                    SERVER_NICK=self._config['SERVER_NICK']
+            else:
+                logging.debug(
+                    'Network responsiveness test for {SERVER_NICK} returning True.'.format(
+                        SERVER_NICK=self._config['SERVER_NICK']
+                    )
                 )
-            )
 
-            return True
+                return True
 
 
     def _check(self):
@@ -590,7 +599,7 @@ class Server:
         and take action as necessary.
         """
 
-        with self.lock:
+        with self._lock:
             logging.debug(
                 'Beginning server check of {SERVER_NICK} server.'.format(
                     SERVER_NICK=self._config['SERVER_NICK']
