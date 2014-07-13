@@ -27,8 +27,8 @@ class Server:
         restart()    
         run() [static]
         sendCommand(command)
+        start()        
         stop()
-        start()
 
     Methods prefixed with _ are private methods, and should not be called externally.
     """
@@ -98,9 +98,9 @@ class Server:
         """
 
         # self.lock is used to protect member variables, and also server methods
-        # which write to these members. Such methods could be called by stdin or network handler threads.
+        # which read or write to these members. Such methods could be called by stdin or
+        # network handler threads.
         # It is a reentrant lock, and can be acquired multiple times by the same thread.
-
         self._lock = threading.RLock()
         
         # Acquires lock and automatically releases it under any circumstance where execution moves
