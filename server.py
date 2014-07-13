@@ -34,6 +34,44 @@ class Server:
         Server.scheduler.run()
 
 
+    @staticmethod
+    def executeInShell(command):
+        """
+        This will execute 'command' in the system shell, and will pipe stdout and stderr
+        to the pycraft logger.
+        """
+
+        logging.info(
+            'Executing the following command in system shell:\n{COMMAND}'.format(
+                COMMAND=command
+            )
+        )
+
+        p = subprocess.Popen(
+            args=[command],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=True
+        )
+
+        # Will block until process terminates.
+        stdout, stderr = p.communicate()
+
+        if stdout:
+            logging.info(
+                'STDOUT:\n{STDOUT}'.format(
+                    STDOUT=stdout
+                )
+            )
+
+        if stderr:
+            logging.info(
+                'STDERR:\n{STDERR}'.format(
+                    STDERR=stderr
+                )
+            )
+
+
     def __init__(self, config):
         """
         Constructor to initialise the Server class.
@@ -82,13 +120,12 @@ class Server:
 
         # Send stuff command to screen session. Screen session is named with server nick.
         # \r simulates the return key and causes the command to be executed.
-        subprocess.call(
+        Server.executeInShell(
             'screen -p 0 -S '
             + self.config['SERVER_NICK']
             + ' -X stuff "\r'
             + command
             + '\r"',
-            shell=True
         )        
 
 
@@ -322,10 +359,9 @@ class Server:
             )
         )
 
-        subprocess.call(
+        Server.executeInShell(
             'pkill -SIGKILL -f '
             + self.config['SERVER_JAR'],
-            shell=True
         )
 
 
@@ -336,11 +372,10 @@ class Server:
         otherwise interfere with the sendCommand method.
         """
         
-        subprocess.call(
+        Server.executeInShell(
             'screen -S '
             + self.config['SERVER_NICK']
             + ' -X quit',
-            shell=True
         )
 
 
@@ -410,31 +445,28 @@ class Server:
             # instance.
             self.quitScreenSession()
 
-            subprocess.call(
+            Server.executeInShell(
                 'screen -d -m -S '
                 + self.config['SERVER_NICK']
                 + ' '
                 + self.config['SERVER_PATH']
                 + '/'
                 + self.config['START_SCRIPT'],
-                shell=True
             )
 
             if self.config['MULTIUSER_ENABLED']:
-                subprocess.call(
+                Server.executeInShell(
                     'screen -S '
                     + self.config['SERVER_NICK']
                     + ' -X multiuser on',
-                    shell=True
                 )
 
                 for user in self.config['AUTHORISED_ACCOUNTS']:
-                    subprocess.call(
+                    Server.executeInShell(
                         'screen -S '
                         + self.config['SERVER_NICK']
                         + ' -X acladd '
                         + user,
-                        shell=True
                     )
 
             # Update state variable to indicate that the server should now be online
