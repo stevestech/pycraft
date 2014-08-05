@@ -233,7 +233,7 @@ class Server:
                 return None
 
             else:
-                return time.time() - process.create_time
+                return time.time() - process.create_time()
 
 
     def _scheduleCheck(self, immediate=False):
