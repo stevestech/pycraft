@@ -227,7 +227,8 @@ class StdinListener(threading.Thread):
 
 
                 if commandList[0] == "exit":
-                    Pycraft.stop()
+                    # TODO implement better way of terminating entire program
+                    sys.exit(0)
 
 
                 elif commandList[0] == "help":
