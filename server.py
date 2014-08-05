@@ -20,7 +20,9 @@ class Server:
     Constructor:
         __init__(config)
 
-    Public methods:    
+    Public methods:
+        getConfig(key)
+        getTargetState()    
         getUptime()
         isOnline()
         isResponsive()
@@ -129,6 +131,23 @@ class Server:
             # Schedule initial restart and server check events.
             self._scheduleCheck(immediate=True)
             self._scheduleRestarts()
+
+
+    def getConfig(self, key):
+        """
+        Allow external modules to retrieve server configuration values.
+        """
+
+        return self._config.get(key)
+
+
+    def getTargetState(self):
+        """
+        Allow external modules to see if the server is meant to be online
+        or offline.
+        """
+
+        return self._online
 
 
     def sendCommand(self, command):
@@ -419,9 +438,11 @@ class Server:
         Attempt to stop server gracefully, else stop forcefully.
         """
 
+        # TODO: throw exceptions on error
+
         with self._lock:
             # Don't stop if server already offline
-            if self._online and self.isOnline():
+            if self._online:
 
                 logging.info(
                     'Stopping {SERVER_NICK} server.'.format(
@@ -467,6 +488,8 @@ class Server:
         """
         Create a new screen session for the server and execute the server start script
         """
+
+        # TODO: throw exception on error
 
         with self._lock:
             # Don't start if server already running
