@@ -70,7 +70,7 @@ class Pycraft:
         # class to monitor that server's log file and extract the chat entries to a chatlog.
 
         for s in Pycraft.serverInstances:
-            if s.config['ENABLE_CHATLOG']:
+            if s.getConfig('ENABLE_CHATLOG'):
                 Pycraft.observerInstances.append(
                     chatlog.FMLLogObserver(s.config)
                 )
