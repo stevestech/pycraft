@@ -87,7 +87,7 @@ class Server:
             )
 
         if stderr:
-            logging.info(
+            logging.warning(
                 'STDERR:\n{STDERR}'.format(
                     STDERR=stderr
                 )
@@ -184,24 +184,27 @@ class Server:
         executing the server jar-file
         """
 
-        with self._lock:    
+        PIDs = []
+
+        # Iterate over all currently running processes.
+        for proc in psutil.process_iter():
             try:
-                pgrep_output = subprocess.check_output(
-                    'pgrep -f ' + self._config['SERVER_JAR'],
-                    shell=True
-                )
+                # proc.cmdline() returns all command line arguments used to start the
+                # process, as a list.
+                commandLineArgs = proc.cmdline()
 
-            except subprocess.CalledProcessError:
-                # pgrep found no matches, and returned non-zero. Return empty list.
-                return []
-        
-            pgrep_output_list = pgrep_output.split()
+                # Determine if the command line args contain the name of the server
+                # jar file.
+                for arg in commandLineArgs:
+                    if arg.find(self._config['SERVER_JAR']) != -1:
+                        # Add pid of this process to the list
+                        PIDs.append(proc.pid)
 
-            # Convert from list of strings to list of integers
-            for index in range(len(pgrep_output_list)):
-                pgrep_output_list[index] = int(pgrep_output_list[index])
+            except psutil.NoSuchProcess:
+                pass
 
-            return pgrep_output_list
+
+        return PIDs
 
 
     def isOnline(self):
@@ -217,14 +220,20 @@ class Server:
         Returns the number of seconds for which this server has been running
         """
 
-        serverPIDs = self._getPIDs()
+        PIDs = self._getPIDs()
 
-        if not self._online or len(serverPIDs) == 0:
+        if len(PIDs) == 0:
             return None
 
         else:
-            process = psutil.Process(serverPIDs[0])
-            return time.time() - process.create_time
+            try:
+                process = psutil.Process(PIDs[0])
+
+            except psutil.NoSuchProcess:
+                return None
+
+            else:
+                return time.time() - process.create_time
 
 
     def _scheduleCheck(self, immediate=False):
@@ -412,10 +421,31 @@ class Server:
                 )
             )
 
-            Server._executeInShell(
-                'pkill -SIGKILL -f '
-                + self._config['SERVER_JAR'],
-            )
+            for PID in self._getPIDs():
+                try:
+                    proc = psutil.Process(PID)
+                    proc.kill()
+
+                except psutil.NoSuchProcess:
+                    logging.warning(
+                        'Tried to kill process {PID}, when there was no such process running.'.format(
+                            PID=PID)
+                    )
+
+                except psutil.AccessDenied:
+                    logging.warning(
+                        'Tried to kill process {PID}, but this user does not have the necessary'.format(
+                            PID=PID
+                        )
+                        + ' permissions.'
+                    )
+
+                else:
+                    logging.info(
+                        'Killed process {PID} successfully.'.format(
+                            PID=PID
+                        )
+                    )
 
 
     def _quitScreenSession(self):
