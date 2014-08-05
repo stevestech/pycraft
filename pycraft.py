@@ -312,6 +312,11 @@ class StdinListener(threading.Thread):
                             # TODO catch exceptions
 
 
+                else:
+                    # Unrecognised command
+                    StdinListener.displayHelp()
+
+
 # Only execute if this is the main module.
 # Don't configure the logger or begin execution if this module was imported.
 if __name__ == "__main__":
