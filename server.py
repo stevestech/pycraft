@@ -724,6 +724,7 @@ class Server:
                         + ' Server will now be started.'
                     )
 
+                    self._online = False
                     self.start()
 
                 elif len(serverPIDs) == 1:
