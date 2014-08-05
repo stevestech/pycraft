@@ -21,10 +21,8 @@ Features
 System requirements
 -------------------
 UNIX-like operating system with the following executables on the system path:
-*   python3
+*   python
 *   screen
-*   pgrep
-*   pkill
 
 Required third-party Python modules
 -----------------------------------
