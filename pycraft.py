@@ -123,13 +123,9 @@ class Pycraft:
         for o in Pycraft.observerInstances:
             o.stop()
 
-        Pycraft.stdinListenerThread.stop()
-
 
         for o in Pycraft.observerInstances:
             o.join()
-
-        Pycraft.stdinListenerThread.join()
 
 
         sys.exit(0)
@@ -209,11 +205,6 @@ class StdinListener(threading.Thread):
 
     def __init__(self):
         super(StdinListener, self).__init__(name="Thread-PycraftStdinListener")
-        self.stopping = False
-
-
-    def stop(self):
-        self.stopping = True
 
 
     def run(self):
@@ -236,8 +227,7 @@ class StdinListener(threading.Thread):
 
 
                 if commandList[0] == "exit":
-                    print("TODO: Exit pycraft.")
-                    continue
+                    Pycraft.stop()
 
 
                 elif commandList[0] == "help":
