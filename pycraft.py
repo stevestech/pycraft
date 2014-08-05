@@ -137,7 +137,7 @@ class Pycraft:
 
 class StdinListener(threading.Thread):
     @staticmethod
-    def displayHelp(self, command=None):
+    def displayHelp(command=None):
         if command == "exit":
             print("exit:")
             print("Closes the Pycraft server wrapper. Any servers that are currently being")
