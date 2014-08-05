@@ -288,7 +288,7 @@ class StdinListener(threading.Thread):
                         s = StdinListener.getServerInstance(commandList[1])
 
                         if s is not None:
-                            print("Current status of server: {}".format(s.getConfig["SERVER_NICK"]))
+                            print("Current status of server: {}".format(s.getConfig("SERVER_NICK"))
                             
                             if s.getTargetState():
                                 print("Target state: online")
