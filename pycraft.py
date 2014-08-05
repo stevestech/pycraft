@@ -8,6 +8,7 @@ Each server has its own configuration options which are defined in config.py.
 
 # Library modules
 import logging
+import readline
 import signal
 import sys
 import threading
