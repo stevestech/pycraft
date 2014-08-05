@@ -223,7 +223,7 @@ class StdinListener(threading.Thread):
             # Command should be in the form:
             # <serverNick> <action> [parameters]
             sys.stdout.write("\n")
-            command = input("pycraft> ")
+            command = raw_input("pycraft> ")
 
             commandList = command.split()
 
