@@ -210,7 +210,7 @@ class StdinListener(threading.Thread):
     def run(self):
         StdinListener.displayHelp()
 
-        while not self.stopping:
+        while True:
             # Command should be in the form:
             # <serverNick> <action> [parameters]
             sys.stdout.write("\n")
