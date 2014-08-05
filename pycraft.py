@@ -72,7 +72,10 @@ class Pycraft:
         for s in Pycraft.serverInstances:
             if s.getConfig('ENABLE_CHATLOG'):
                 Pycraft.observerInstances.append(
-                    chatlog.FMLLogObserver(s.config)
+                    chatlog.FMLLogObserver(
+                        s.getConfig('SERVER_NICK'),
+                        s.getConfig('SERVER_PATH')
+                    )
                 )
 
 
@@ -90,7 +93,7 @@ class Pycraft:
         for o in Pycraft.observerInstances:
             logging.info(
                 'Starting FMLLogObserver for {SERVER_NICK} server.'.format(
-                    SERVER_NICK=o.serverNick
+                    SERVER_NICK=o.SERVER_NICK
                 )
             )
 
