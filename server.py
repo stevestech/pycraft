@@ -187,20 +187,26 @@ class Server:
         PIDs = []
 
         # Iterate over all currently running processes.
-        for proc in psutil.process_iter():
+        for process in psutil.process_iter():
             try:
                 # proc.cmdline() returns all command line arguments used to start the
                 # process, as a list.
-                commandLineArgs = proc.cmdline()
+                commandLineArgs = process.cmdline()
 
-                # Determine if the command line args contain the name of the server
-                # jar file.
-                for arg in commandLineArgs:
-                    if arg.find(self._config['SERVER_JAR']) != -1:
-                        # Add pid of this process to the list
-                        PIDs.append(proc.pid)
+                # Determine if this is a Java process
+                if len(commandLineArgs) >= 1 and commandLineArgs[0].lower().find("java") != -1:
 
-            except psutil.NoSuchProcess:
+                    # Determine if the command line args contain the name of the server
+                    # jar file.
+                    for arg in commandLineArgs:
+                        if arg.find(self._config['SERVER_JAR']) != -1:
+
+                            # This is indeed an instance of the Minecraft server that we are
+                            # currently monitoring.
+                            PIDs.append(process.pid)
+                            break
+
+            except psutil.Error:
                 pass
 
 
