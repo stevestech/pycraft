@@ -471,8 +471,8 @@ class Server:
         # TODO: throw exceptions on error
 
         with self._lock:
-            # Don't stop if server already offline
-            if self._online:
+            # Only proceed if server is currently online
+            if self.isOnline():
 
                 logging.info(
                     'Stopping {SERVER_NICK} server.'.format(
@@ -522,8 +522,8 @@ class Server:
         # TODO: throw exception on error
 
         with self._lock:
-            # Don't start if server already running
-            if not self._online and not self.isOnline():
+            # Only proceed if server is currently offline
+            if not self.isOnline():
 
                 logging.info(
                     'Starting {SERVER_NICK} server.'.format(
@@ -662,9 +662,9 @@ class Server:
             # List of process IDs of Java Runtime Environment processes currently
             # executing the Minecraft server.
             # len(serverPIDs) gives the number of processes currently running.
-            serverPIDs = self._getPIDs()
+            PIDs = self._getPIDs()
 
-            while len(serverPIDs) > 1:
+            while len(PIDs) > 1:
                 # Multiple instances of this server are running simultaneously. Kill the ones
                 # most recently started, leaving one remaining.
 
@@ -673,17 +673,17 @@ class Server:
                         SERVER_NICK=self._config['SERVER_NICK']
                     )
                     + ' Number of processes found: {NUM_PROCESSES}'.format(
-                        NUM_PROCESSES=len(serverPIDs)
+                        NUM_PROCESSES=len(PIDs)
                     )
                 )
 
 
-                newestProcess = psutil.Process(serverPIDs[0])
+                newestProcess = psutil.Process(PIDs[0])
 
-                for p in serverPIDs:                
-                    process = psutil.Process(p)
+                for PID in PIDs:                
+                    process = psutil.Process(PID)
 
-                    if process.create_time > newestProcess.create_time:
+                    if process.create_time() > newestProcess.create_time():
                         newestProcess = process
 
 
@@ -699,7 +699,7 @@ class Server:
 
                 newestProcess.terminate()
 
-                for index in range(30):
+                for index in range(60):
                     time.sleep(1)
 
                     if not newestProcess.is_running():
@@ -710,13 +710,13 @@ class Server:
                     newestProcess.kill()
 
                 time.sleep(5)
-                serverPIDs = self._getPIDs()
+                PIDs = self._getPIDs()
 
 
             if self._online:
                 # Minecraft server should currently be online and responsive
 
-                if len(serverPIDs) == 0:
+                if len(PIDs) == 0:
                     logging.debug(
                         '{SERVER_NICK} server is desired to be online, but no process was found.'.format(
                             SERVER_NICK=self._config['SERVER_NICK']
@@ -724,10 +724,9 @@ class Server:
                         + ' Server will now be started.'
                     )
 
-                    self._online = False
                     self.start()
 
-                elif len(serverPIDs) == 1:
+                elif len(PIDs) == 1:
                     logging.debug(
                         '{SERVER_NICK} server is desired to be online, and is currently running.'.format(
                             SERVER_NICK=self._config['SERVER_NICK']
@@ -764,7 +763,7 @@ class Server:
 
             else:
                 # Minecraft server should be offline
-                if len(serverPIDs) > 0:
+                if len(PIDs) > 0:
                     logging.debug(
                         '{SERVER_NICK} server is desired to be offline, but instances of this'.format(
                             SERVER_NICK=self._config['SERVER_NICK']
