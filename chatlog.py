@@ -81,7 +81,7 @@ class FMLLogHandler(watchdog.events.PatternMatchingEventHandler):
             new file path after move operation
         """
 
-        if event.dest_path == self.config['SERVER_PATH'] + '/ForgeModLoader-server-1.log':
+        if event.dest_path == self.SERVER_PATH + '/ForgeModLoader-server-1.log':
             logging.info(
                 'Appending to chatlog for {SERVER_NICK} server.'.format(
                     SERVER_NICK=self.SERVER_NICK
