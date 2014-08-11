@@ -21,13 +21,11 @@ Features
 System requirements
 -------------------
 UNIX-like operating system with the following executables on the system path:
-*   python3
+*   python
 *   screen
-*   pgrep
-*   pkill
 
 Required third-party Python modules
 -----------------------------------
-[psutil](https://github.com/giampaolo/psutil)  
+[psutil](https://pypi.python.org/pypi/psutil)  
 [watchdog](https://pypi.python.org/pypi/watchdog)
     
