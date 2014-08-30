@@ -477,8 +477,7 @@ class Server:
         # TODO: throw exceptions on error
 
         with self._lock:
-            # Only proceed if server is currently online
-            if self.isOnline():
+            if not self._online:
 
                 logging.info(
                     'Stopping {SERVER_NICK} server.'.format(
@@ -500,7 +499,7 @@ class Server:
 
                     if not self.isOnline():
 
-                        logging.info(
+                        logging.debug(
                             '{SERVER_NICK} server was closed gracefully.'.format(
                                 SERVER_NICK=self._config['SERVER_NICK']
                             )
@@ -510,14 +509,6 @@ class Server:
 
                 # If process did not terminate, then stop forcefully.
                 self._killServer()
-
-
-            else:
-                logging.warning(
-                    'Attempted to stop {SERVER_NICK} server which was in offline state.'.format(
-                        SERVER_NICK=self._config['SERVER_NICK']
-                    )
-                )
 
     
     def start(self):
@@ -730,6 +721,8 @@ class Server:
                         + ' Server will now be started.'
                     )
 
+                    # Remove restart events from any previous processes
+                    self._cancelRestartEvents()
                     self.start()
 
                 elif len(PIDs) == 1:
@@ -765,7 +758,7 @@ class Server:
                                         )
 
                                         self.restart()
-                                        break            
+                                        break
 
             else:
                 # Minecraft server should be offline

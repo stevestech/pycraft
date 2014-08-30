@@ -52,7 +52,7 @@ class Pycraft:
 
         # Register Pycraft.stop() as the function to call when the OS sends any of
         # the following signals
-        logging.info('Registering signal handlers.')
+        logging.debug('Registering signal handlers.')
 
         for sig in [signal.SIGTERM, signal.SIGINT, signal.SIGHUP, signal.SIGQUIT]:
             signal.signal(sig, Pycraft.stop)
@@ -80,7 +80,7 @@ class Pycraft:
                 )
 
 
-        logging.info('Initialising stdin listener thread.')
+        logging.debug('Initialising stdin listener thread.')
         Pycraft.stdinListenerThread = StdinListener()
 
 
@@ -315,7 +315,7 @@ if __name__ == "__main__":
     logging.basicConfig(
         format='%(asctime)s %(levelname)s %(message)s',
         filename='pycraft.log',
-        level=logging.DEBUG
+        level=logging.INFO
     )
 
     Pycraft.init()
