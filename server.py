@@ -477,7 +477,7 @@ class Server:
         # TODO: throw exceptions on error
 
         with self._lock:
-            if not self._online:
+            if self._online:
 
                 logging.info(
                     'Stopping {SERVER_NICK} server.'.format(
@@ -723,6 +723,7 @@ class Server:
 
                     # Remove restart events from any previous processes
                     self._cancelRestartEvents()
+                    self._online = False
                     self.start()
 
                 elif len(PIDs) == 1:
