@@ -17,7 +17,7 @@ class StdinListener(threading.Thread):
     def __init__(self, serverInstances, version):
         super(StdinListener, self).__init__(name="Thread-PycraftStdinListener")
 
-        self.daemon = True
+        self.daemon = False
         self.serverInstances = serverInstances
         self.stopping = False
         self.version = version
