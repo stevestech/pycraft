@@ -128,6 +128,10 @@ class Server:
             # This list holds all future restart events. Used for event cancellations.
             self._restartEvents = []
 
+            # This holds the future server check event, to be cancelled should an immediate check
+            # be requested
+            self._checkEvent = None
+
             # Schedule initial restart and server check events.
             self._scheduleCheck(immediate=True)
             self._scheduleRestarts()
@@ -248,6 +252,19 @@ class Server:
         self._check() method.
         """
 
+        # Cancel the existing check event if one exists. Allows _schelduleCheck to be
+        # called immediately, even if there is a delayed check for this server present
+        # in the scheduler.
+        if self._checkEvent is not None:
+            try:
+                Server.scheduler.cancel(self._checkEvent)
+            except ValueError:
+                # Event was no longer on the queue
+                pass
+                    
+            self._checkEvent = None
+
+
         with self._lock:
             logging.debug(
                 'Scheduling a server check for {SERVER_NICK}. Immediate: {IMMEDIATE}.'.format(
@@ -258,7 +275,7 @@ class Server:
 
             if immediate:
                 # Schedule an immediate server check
-                Server.scheduler.enter(
+                self._checkEvent=Server.scheduler.enter(
                     0,
                     1,
                     self._check,
@@ -267,7 +284,7 @@ class Server:
 
             else:
                 # Schedule a server check in 60 seconds
-                Server.scheduler.enter(
+                self._checkEvent=Server.scheduler.enter(
                     60,
                     1,
                     self._check,
@@ -479,7 +496,7 @@ class Server:
         with self._lock:
             if self._online:
 
-                logging.info(
+                logging.debug(
                     'Stopping {SERVER_NICK} server.'.format(
                         SERVER_NICK=self._config['SERVER_NICK']
                     )
@@ -574,10 +591,11 @@ class Server:
 
 
     def restart(self):
-        with self._lock:
-            self.sendCommand('say Server is restarting, see you soon!')
-            self.stop()
-            self.start()
+        if self._online:
+            with self._lock:
+                self.sendCommand('say Server is restarting, see you soon!')
+                self.stop()
+                self.start()
 
 
     def isResponsive(self):
@@ -648,6 +666,8 @@ class Server:
         Compare the desired state with the actual state of the server,
         and take action as necessary.
         """
+
+        self._checkEvent = None
 
         with self._lock:
             logging.debug(
