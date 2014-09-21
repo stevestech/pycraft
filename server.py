@@ -424,9 +424,10 @@ class Server:
     def _restartWarning(self, minutes):
         if minutes == 1:
             self.sendCommand('say An automated restart will occur in 1 minute.')
+            self.sendCommand('save-all')
 
         else:
-            self.sendCommand('say An automated restart will occur in ' + str(minutes) + ' minutes.')        
+            self.sendCommand('say An automated restart will occur in ' + str(minutes) + ' minutes.')
 
 
     def _killServer(self):
